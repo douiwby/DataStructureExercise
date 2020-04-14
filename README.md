@@ -1,1 +1,2 @@
-# TemplateFromVisualStudio
+# DataStructureExercise
+Exercise for learning Data Structure
