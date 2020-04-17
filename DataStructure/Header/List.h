@@ -21,8 +21,16 @@ template<typename T>
 class List
 {
 public:
+	// --------------------
+	// Type declaration
+	// --------------------
+
 	typedef unsigned SizeType;
 	class ListIterator;
+
+	// --------------------
+	// Constructor and destructor
+	// --------------------
 
 	List() { init(); }
 	List(const List& l)
@@ -33,26 +41,41 @@ public:
 	~List();
 	void clear();
 
-	SizeType size() const { return _size; }
+	// --------------------
+	// Get member
+	// --------------------
 
+	SizeType size() const { return _size; }
 	ListIterator begin() const { return ListIterator(header->next); }
 	ListIterator end() const { return ListIterator(trailer); }
+
+	// --------------------
+	// Algorithms
+	// --------------------
+
 	ListIterator insert(const ListIterator& it, const T& v);
 	ListIterator insert(const ListIterator& it, const ListIterator& b, const ListIterator& e);
 	ListIterator erase(const ListIterator& it);
 	ListIterator erase(const ListIterator& b, const ListIterator& e);
+	void unique();
 
 	ListIterator find(const T& v) { return Algorithm::find(begin(), end(), v); }
-
-	ListIterator searchFirstGreater(const T&v, ListIterator b, ListIterator e)
-	{
-		return Algorithm::find_if(b, e, [&v](const T& element) {return v < element; });
-	}
-	static ListIterator moveElement(const ListIterator& src, const ListIterator& dest);
+	ListIterator searchFirstGreater(const T&v, ListIterator b, ListIterator e) { return Algorithm::find_if(b, e, [&v](const T& element) {return v < element; }); }
+	// Move elements to before dest
+	static void moveElement(const ListIterator& src, const ListIterator& dest);
+	static void moveElement(const ListIterator& b, const ListIterator& e, const ListIterator& dest);
 	static void swapElement(ListIterator lhs, ListIterator rhs);
+
 	void insertionSort(ListIterator b, const ListIterator& e);
 	void insertionSort() { insertionSort(begin(), end()); }
-	void unique();
+
+	ListIterator searchMax(const ListIterator& b, const ListIterator& e);
+	void selectionSort(ListIterator b, ListIterator e);
+	void selectionSort() { selectionSort(begin(), end()); }
+
+	// Todo: use more readable one to replace this
+	void mergeSort(ListIterator& b, ListIterator& e);
+	void mergeSort() { auto _beg = begin(),_end=end(); mergeSort(_beg, _end); }
 
 private:
 	ListNode<T>* header;
@@ -60,6 +83,9 @@ private:
 	SizeType _size;
 
 	void init();
+
+	// Merge two element ranges and move it to before dest. Return the first element after merge.
+	ListIterator innerMerge(ListIterator b1, const ListIterator& e1, ListIterator b2, const ListIterator& e2, const ListIterator& dest);
 };
 
 template<typename T>
@@ -67,6 +93,7 @@ class List<T>::ListIterator
 {
 	friend class List<T>;
 public:
+	typedef int DifferenceType;
 	ListIterator(ListNode<T>* p) :pNode(p) {}
 	T& operator*()
 	{
@@ -101,6 +128,55 @@ public:
 	}
 	bool operator==(const ListIterator& rhs) const { return this->pNode == rhs.pNode; }
 	bool operator!=(const ListIterator& rhs) const { return !(*this == rhs); }
+	ListIterator operator+(DifferenceType i) const
+	{
+		ListIterator ret = *this;
+		if (i >= 0)
+		{
+			while (i != 0)
+			{
+				++ret;
+				--i;
+			}
+			return ret;
+		}
+		else return *this - (-i);
+	}
+	ListIterator operator-(DifferenceType i) const
+	{
+		ListIterator ret = *this;
+		if (i >= 0)
+		{
+			while (i != 0)
+			{
+				--ret;
+				--i;
+			}
+			return ret;
+		}
+		else return *this + (-i);
+	}
+	DifferenceType operator-(const ListIterator& v) const
+	{
+		ListIterator it = *this;
+		DifferenceType ret = 0;
+		if (it == v) return ret;
+		// Assume *this is larger then v
+		while (it.pNode->prev->prev)
+		{
+			--it; ++ret;
+			if (it == v) return ret;
+		}
+		//Reach begin(), *this is less then v
+		while (it.pNode->next)
+		{
+			++it; --ret;
+			if (it == v) return ret;
+		}
+		// Reach end(), *this is not in the same list of v
+		assert(false);
+		return ret;
+	}
 private:
 	ListNode<T>* pNode;
 };
@@ -191,16 +267,26 @@ typename List<T>::ListIterator List<T>::erase(const ListIterator& b, const ListI
 }
 
 template<typename T>
-inline typename List<T>::ListIterator List<T>::moveElement(const ListIterator & src, const ListIterator & dest)
+inline void List<T>::moveElement(const ListIterator & src, const ListIterator & dest)
 {
 	assert(src.pNode && src.pNode->next);  //Can not move end()
-	src.pNode->prev->next = src.pNode->next;
-	src.pNode->next->prev = src.pNode->prev;
-	src.pNode->prev = dest.pNode->prev;
-	src.pNode->next = dest.pNode;
-	dest.pNode->prev->next = src.pNode;
-	dest.pNode->prev = src.pNode;
-	return src;
+	auto last = src;
+	++last;
+	moveElement(src, last, dest);
+}
+
+template<typename T>
+inline void List<T>::moveElement(const ListIterator& b, const ListIterator& e, const ListIterator& dest)
+{
+	assert(b.pNode && b.pNode->next);  //Can not move end()
+	if (b == e) return;
+	ListIterator last(e.pNode->prev);
+	b.pNode->prev->next = last.pNode->next;
+	last.pNode->next->prev = b.pNode->prev;
+	b.pNode->prev = dest.pNode->prev;
+	last.pNode->next = dest.pNode;
+	dest.pNode->prev->next = b.pNode;
+	dest.pNode->prev = last.pNode;
 }
 
 template<typename T>
@@ -243,4 +329,122 @@ void List<T>::unique()
 			it = first;
 		}
 	}
+}
+
+template<typename T>
+typename List<T>::ListIterator List<T>::searchMax(const ListIterator& b, const ListIterator& e)
+{
+	auto maxElement = b, it = b;
+	++it;
+	for (; it != e; ++it)
+	{
+		if (!(*it < *maxElement)) maxElement = it;
+	}
+	return maxElement;
+}
+
+template<typename T>
+void List<T>::selectionSort(ListIterator b, ListIterator e)
+{
+	assert(b.pNode && b.pNode->next);  //Can not move end()
+	while (e != b)
+	{
+		auto maxElement = searchMax(b,e);
+		if (maxElement == b) ++b;
+		moveElement(maxElement, e);
+		if (b.pNode->next == maxElement.pNode) break;
+		e = maxElement;
+	}
+}
+
+template<typename T>
+void List<T>::mergeSort(ListIterator& b, ListIterator& e)
+{
+	assert(b.pNode && b.pNode->next);  //Can not move end()
+	typename ListIterator::DifferenceType diff = e - b;
+	assert(diff >= 0);
+	ListIterator mid = b + (diff / 2);
+
+	// Insert a new node to avoid moveElement's dest is in range b~e
+	ListIterator tempBeginNode = insert(b, T());
+
+	if (diff == 2)
+	{
+		b = innerMerge(b, b + 1, e - 1, e, tempBeginNode);
+		e = tempBeginNode + 1;
+	}
+	else if (diff == 1 || diff == 0)
+	{
+		// Do nothing
+	}
+	else
+	{
+		mergeSort(b, mid);
+		mergeSort(mid, e);
+		b = innerMerge(b, mid, mid, e, tempBeginNode);
+		e = tempBeginNode + 1;
+	}
+
+	erase(tempBeginNode);
+}
+
+template<typename T>
+typename List<T>::ListIterator List<T>::innerMerge(ListIterator b1, const ListIterator& e1, ListIterator b2, const ListIterator& e2, const ListIterator& dest)
+{
+	assert(b1.pNode && b1.pNode->next);  //Can not move end()
+	assert(b2.pNode && b2.pNode->next);  //Can not move end()
+	assert((e1 - b1 >= 0) && (e2 - b2) >= 0);
+
+	// Insert a new node to avoid e1/e2 being moved if b1==e2 or b2==e1
+	ListIterator tempEndNode1 = insert(e1, T());
+	ListIterator tempEndNode2 = insert(e2, T());
+
+	// All element in one list is less then another list, no need to move one by one.
+	if (*(tempEndNode1 - 1) < *b2)
+	{
+
+		moveElement(b1, tempEndNode1, dest);
+		moveElement(b2, tempEndNode2, dest);
+
+		erase(tempEndNode1);
+		erase(tempEndNode2);
+		return b1;
+	}
+	if (*(tempEndNode2 - 1) < *b1)
+	{
+		moveElement(b2, tempEndNode2, dest);
+		moveElement(b1, tempEndNode1, dest);
+
+		erase(tempEndNode1);
+		erase(tempEndNode2);
+		return b2;
+	}
+
+	// Compare the first element of two list and move the smaller element to dest
+	ListIterator firstElement = (*b1 < *b2)?b1:b2;
+	while (b1 != tempEndNode1 && b2 != tempEndNode2)
+	{
+		if (*b1 < *b2)
+		{
+			moveElement(b1++, dest);
+		}
+		else
+		{
+			moveElement(b2++, dest);
+		}
+	}
+
+	// One list has been all merged, append another list
+	if (b1 == tempEndNode1)
+	{
+		moveElement(b2, tempEndNode2, dest);
+	}
+	if (b2 == tempEndNode2)
+	{
+		moveElement(b1, tempEndNode1, dest);
+	}
+
+	erase(tempEndNode1);
+	erase(tempEndNode2);
+	return firstElement;
 }
