@@ -38,25 +38,44 @@ public:
 		init();
 		insert(begin(), l.begin(), l.end());
 	}
+	template<typename T2>
+	List(const List<T2>& l)
+	{
+		init();
+		for (auto _beg = l.begin(); _beg != l.end(); ++_beg)
+		{
+			insert(end(), *_beg);
+		}
+	}
 	~List();
 	void clear();
 
 	// --------------------
-	// Get member
+	// Member operator
 	// --------------------
 
 	SizeType size() const { return _size; }
 	ListIterator begin() const { return ListIterator(header->next); }
 	ListIterator end() const { return ListIterator(trailer); }
-
-	// --------------------
-	// Algorithms
-	// --------------------
+	T& front() const 
+	{
+		assert(_size != 0);
+		return header->next->data;
+	}
+	T& back() const
+	{
+		assert(_size != 0);
+		return trailer->prev->data;
+	}
 
 	ListIterator insert(const ListIterator& it, const T& v);
 	ListIterator insert(const ListIterator& it, const ListIterator& b, const ListIterator& e);
 	ListIterator erase(const ListIterator& it);
 	ListIterator erase(const ListIterator& b, const ListIterator& e);
+
+	// --------------------
+	// Algorithms
+	// --------------------
 	void unique();
 
 	ListIterator find(const T& v) { return Algorithm::find(begin(), end(), v); }
@@ -365,13 +384,13 @@ void List<T>::mergeSort(ListIterator& b, ListIterator& e)
 	assert(diff >= 0);
 	ListIterator mid = b + (diff / 2);
 
-	// Insert a new node to avoid moveElement's dest is in range b~e
-	ListIterator tempBeginNode = insert(b, T());
-
 	if (diff == 2)
 	{
+		// Insert a new node to avoid moveElement's dest is in range b~e
+		ListIterator tempBeginNode = insert(b, T());
 		b = innerMerge(b, b + 1, e - 1, e, tempBeginNode);
 		e = tempBeginNode + 1;
+		erase(tempBeginNode);
 	}
 	else if (diff == 1 || diff == 0)
 	{
@@ -381,11 +400,13 @@ void List<T>::mergeSort(ListIterator& b, ListIterator& e)
 	{
 		mergeSort(b, mid);
 		mergeSort(mid, e);
+
+		// Insert a new node to avoid moveElement's dest is in range b~e
+		ListIterator tempBeginNode = insert(b, T());
 		b = innerMerge(b, mid, mid, e, tempBeginNode);
 		e = tempBeginNode + 1;
+		erase(tempBeginNode);
 	}
-
-	erase(tempBeginNode);
 }
 
 template<typename T>
