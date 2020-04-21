@@ -78,8 +78,8 @@ public:
 	// --------------------
 	void unique();
 
-	ListIterator find(const T& v) { return Algorithm::find(begin(), end(), v); }
-	ListIterator searchFirstGreater(const T&v, ListIterator b, ListIterator e) { return Algorithm::find_if(b, e, [&v](const T& element) {return v < element; }); }
+	ListIterator find(const T& v) const { return Algorithm::find(begin(), end(), v); }
+	ListIterator searchFirstGreater(const T&v, ListIterator b, ListIterator e) const { return Algorithm::find_if(b, e, [&v](const T& element) {return v < element; }); }
 	// Move elements to before dest
 	static void moveElement(const ListIterator& src, const ListIterator& dest);
 	static void moveElement(const ListIterator& b, const ListIterator& e, const ListIterator& dest);
@@ -88,7 +88,7 @@ public:
 	void insertionSort(ListIterator b, const ListIterator& e);
 	void insertionSort() { insertionSort(begin(), end()); }
 
-	ListIterator searchMax(const ListIterator& b, const ListIterator& e);
+	ListIterator searchMax(const ListIterator& b, const ListIterator& e) const;
 	void selectionSort(ListIterator b, ListIterator e);
 	void selectionSort() { selectionSort(begin(), end()); }
 
@@ -351,7 +351,7 @@ void List<T>::unique()
 }
 
 template<typename T>
-typename List<T>::ListIterator List<T>::searchMax(const ListIterator& b, const ListIterator& e)
+typename List<T>::ListIterator List<T>::searchMax(const ListIterator& b, const ListIterator& e) const
 {
 	auto maxElement = b, it = b;
 	++it;

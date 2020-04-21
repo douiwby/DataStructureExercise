@@ -1,6 +1,8 @@
 #pragma once
 #include <cassert>
 
+#include "Algorithm.h"
+
 template<typename T>
 class Vector
 {
@@ -11,20 +13,24 @@ public:
 	typedef unsigned SizeType;
 	typedef unsigned Rank;
 	typedef T* VectorIterator;  //Todo: use iterator class
+	typedef int DifferenceType;
 
 	// --------------------
 	// Constructor and destructor
 	// --------------------
 	Vector() :_size(0), _capacity(0), _data(nullptr) {}
+	Vector(SizeType n, const T& v);
 	~Vector();
 	Vector(const Vector& v);
 	template<typename T2>
 	Vector(const Vector<T2>& v);
+	Vector(VectorIterator b, const VectorIterator& e);
 
 	// --------------------
 	// Member operator
 	// --------------------
 	SizeType size() const { return _size; }
+	SizeType capacity() const { return _capacity; }
 	T& operator[](Rank r) const { assert(r < _size); return _data[r]; }
 	T& front() const { return _data[0]; }
 	T& back() const { return _data[_size-1]; }
@@ -34,9 +40,15 @@ public:
 	void push_back(const T& v);
 	void pop_back();
 
+	void shrink_to_fit();
+
+	VectorIterator insert(VectorIterator p, const T& t);
+	VectorIterator erase(const VectorIterator& p);
+
 	// --------------------
 	// Algorithms
 	// --------------------
+	VectorIterator find(const T& v) const { return Algorithm::find(begin(), end(), v); }
 
 private:
 	SizeType _size;
@@ -47,11 +59,22 @@ private:
 	SizeType getIncreasedCapacity()
 	{
 		SizeType newSize;
-		if (_capacity == 0) newSize = 1;
+		if (_capacity == 0) newSize = 4;
 		else newSize = _capacity * 2;
 		return newSize;
 	}
 };
+
+template<typename T>
+Vector<T>::Vector(SizeType n, const T& v)
+{
+	_size = _capacity = n;
+	_data = new T[n];
+	for (SizeType i = 0; i < n; ++i)
+	{
+		_data[i] = v;
+	}
+}
 
 template<typename T>
 Vector<T>::~Vector()
@@ -64,7 +87,7 @@ template<typename T>
 Vector<T>::Vector(const Vector& v)
 {
 	_size = _capacity = v.size();
-	_data = new T[_size];
+	_data = new T[_capacity];
 	for (SizeType i = 0; i < _size; ++i)
 	{
 		_data[i] = v[i];
@@ -76,10 +99,25 @@ template<typename T2>
 Vector<T>::Vector(const Vector<T2>& v)
 {
 	_size = _capacity = v.size();
-	_data = new T[_size];
+	_data = new T[_capacity];
 	for (SizeType i = 0; i < _size; ++i)
 	{
 		_data[i] = v[i];
+	}
+}
+
+template<typename T>
+Vector<T>::Vector(VectorIterator b, const VectorIterator& e)
+{
+	if (b == e) return;
+	DifferenceType diff = e - b;
+	assert(diff >= 0);
+	_capacity = diff;
+	_data = new T[_capacity];
+	_size = 0;
+	while (b != e)
+	{
+		push_back(*b++);
 	}
 }
 
@@ -110,4 +148,47 @@ inline void Vector<T>::pop_back()
 {
 	*(_data + _size - 1) = T(); // This should call destructor of original element
 	--_size;
+}
+
+template<typename T>
+inline void Vector<T>::shrink_to_fit()
+{
+	_capacity = 0;
+	expand(_size);
+}
+
+template<typename T>
+typename Vector<T>::VectorIterator Vector<T>::insert(VectorIterator p, const T& t)
+{
+	if (_size + 1 > _capacity)
+	{
+		// expend will make iterator unavailable, record it's position
+		DifferenceType diff = p - begin();
+		expand(getIncreasedCapacity());
+		p = begin() + diff;
+	}
+	VectorIterator last(_data + _size);
+	VectorIterator beforeLast = last - 1;
+	while (last != p)
+	{
+		*(last--) = *(beforeLast--);
+	}
+	*p = t;
+	++_size;
+	return p;
+}
+
+template<typename T>
+typename Vector<T>::VectorIterator Vector<T>::erase(const VectorIterator& p)
+{
+	assert(p != end());
+	VectorIterator first(p);
+	VectorIterator second = first + 1;
+	while (second != end())
+	{
+		*(first++) = *(second++);
+	}
+	*first = T();
+	--_size;
+	return p;
 }
