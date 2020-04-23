@@ -21,6 +21,34 @@ namespace Algorithm
 		}
 		return e;
 	}
+
+	template<typename Iterator>
+	Iterator unique(Iterator b, Iterator e)
+	{
+		if (b == e) return e;
+		Iterator currentPosition(b);
+		while (++b != e)
+		{
+			while (*b == *currentPosition) ++b;
+			if (!(*++currentPosition == *b))
+				*currentPosition = *b;
+		}
+		return ++currentPosition;
+	}
+
+	template<typename Iterator, typename BinaryPredicate>
+	Iterator unique(Iterator b, Iterator e, BinaryPredicate pred)
+	{
+		if (b == e) return e;
+		Iterator currentPosition(b);
+		while (++b != e)
+		{
+			while (pred(*b,*e)) ++b;
+			if (!(*++currentPosition == *b))
+				*currentPosition = *b;
+		}
+		return ++currentPosition;
+	}
 }
 
 #include <iostream>

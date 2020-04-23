@@ -13,7 +13,7 @@ public:
 	typedef unsigned SizeType;
 	typedef unsigned Rank;
 	typedef T* VectorIterator;  //Todo: use iterator class
-	typedef int DifferenceType;
+	typedef ptrdiff_t DifferenceType;
 
 	// --------------------
 	// Constructor and destructor
@@ -43,7 +43,9 @@ public:
 	void shrink_to_fit();
 
 	VectorIterator insert(VectorIterator p, const T& t);
+	VectorIterator insert(VectorIterator p,  VectorIterator b, const VectorIterator& e);
 	VectorIterator erase(const VectorIterator& p);
+	VectorIterator erase(const VectorIterator& b, const VectorIterator& e);
 
 	// --------------------
 	// Algorithms
@@ -56,11 +58,12 @@ private:
 	T* _data;
 
 	void expand(SizeType n);
-	SizeType getIncreasedCapacity()
+	SizeType getIncreasedCapacity(SizeType currentCapacity)
 	{
 		SizeType newSize;
-		if (_capacity == 0) newSize = 4;
-		else newSize = _capacity * 2;
+		const SizeType defaultSize = 4;
+		if (currentCapacity == 0) newSize = defaultSize;
+		else newSize = currentCapacity * 2;
 		return newSize;
 	}
 };
@@ -138,7 +141,7 @@ inline void Vector<T>::expand(SizeType n)
 template<typename T>
 inline void Vector<T>::push_back(const T& v)
 {
-	if (_size == _capacity) expand(getIncreasedCapacity());
+	if (_size == _capacity) expand(getIncreasedCapacity(_capacity));
 	*(_data + _size) = v;
 	++_size;
 }
@@ -164,7 +167,7 @@ typename Vector<T>::VectorIterator Vector<T>::insert(VectorIterator p, const T& 
 	{
 		// expend will make iterator unavailable, record it's position
 		DifferenceType diff = p - begin();
-		expand(getIncreasedCapacity());
+		expand(getIncreasedCapacity(_capacity));
 		p = begin() + diff;
 	}
 	VectorIterator last(_data + _size);
@@ -179,16 +182,62 @@ typename Vector<T>::VectorIterator Vector<T>::insert(VectorIterator p, const T& 
 }
 
 template<typename T>
-typename Vector<T>::VectorIterator Vector<T>::erase(const VectorIterator& p)
+typename Vector<T>::VectorIterator Vector<T>::insert(VectorIterator p, VectorIterator b, const VectorIterator& e)
 {
-	assert(p != end());
-	VectorIterator first(p);
-	VectorIterator second = first + 1;
-	while (second != end())
+	DifferenceType diff = e - b;
+	if (diff == 0) return p;
+	assert(diff >= 0);
+
+	DifferenceType increasedCapacity = _capacity;
+	while (increasedCapacity - _size < diff)
 	{
-		*(first++) = *(second++);
+		increasedCapacity = getIncreasedCapacity(increasedCapacity);
 	}
-	*first = T();
-	--_size;
+	// expend will make iterator unavailable, record it's position
+	DifferenceType diff2 = p - begin();
+	expand(increasedCapacity);
+	p = begin() + diff2;
+
+	VectorIterator srcIt = p;
+	VectorIterator destIt = p + diff;
+	while (srcIt != end())
+	{
+		*destIt++ = *srcIt++;
+	}
+
+	VectorIterator it = p;
+	while (b != e)
+	{
+		*it++ = *b++;
+	}
+	_size += diff;
+
 	return p;
+}
+
+template<typename T>
+inline typename Vector<T>::VectorIterator Vector<T>::erase(const VectorIterator& p)
+{
+	return erase(p, p + 1);
+}
+
+template<typename T>
+typename Vector<T>::VectorIterator Vector<T>::erase(const VectorIterator& b, const VectorIterator& e)
+{
+	assert(b != end());
+	DifferenceType diff = e - b;
+	assert(diff >= 0);
+	VectorIterator destIt = b;
+	VectorIterator srcIt = e;
+	while (srcIt != end())
+	{
+		*destIt++ = *srcIt++;
+	}
+	while (destIt != srcIt)
+	{
+		*destIt++ = T();
+	}
+	assert(diff <= _size);
+	_size -= diff;
+	return b;
 }
