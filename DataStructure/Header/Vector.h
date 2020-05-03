@@ -47,10 +47,14 @@ public:
 	VectorIterator erase(const VectorIterator& p);
 	VectorIterator erase(const VectorIterator& b, const VectorIterator& e);
 
+	void clear();
+
 	// --------------------
 	// Algorithms
 	// --------------------
 	VectorIterator find(const T& v) const { return Algorithm::find(begin(), end(), v); }
+
+	VectorIterator binarySearch(const T& v) const;
 
 private:
 	SizeType _size;
@@ -115,7 +119,7 @@ Vector<T>::Vector(VectorIterator b, const VectorIterator& e)
 	if (b == e) return;
 	DifferenceType diff = e - b;
 	assert(diff >= 0);
-	_capacity = diff;
+	_capacity = static_cast<SizeType>(diff);
 	_data = new T[_capacity];
 	_size = 0;
 	while (b != e)
@@ -188,7 +192,7 @@ typename Vector<T>::VectorIterator Vector<T>::insert(VectorIterator p, VectorIte
 	if (diff == 0) return p;
 	assert(diff >= 0);
 
-	DifferenceType increasedCapacity = _capacity;
+	SizeType increasedCapacity = _capacity;
 	while (increasedCapacity - _size < diff)
 	{
 		increasedCapacity = getIncreasedCapacity(increasedCapacity);
@@ -210,7 +214,7 @@ typename Vector<T>::VectorIterator Vector<T>::insert(VectorIterator p, VectorIte
 	{
 		*it++ = *b++;
 	}
-	_size += diff;
+	_size += static_cast<SizeType>(diff);
 
 	return p;
 }
@@ -238,6 +242,12 @@ typename Vector<T>::VectorIterator Vector<T>::erase(const VectorIterator& b, con
 		*destIt++ = T();
 	}
 	assert(diff <= _size);
-	_size -= diff;
+	_size -= static_cast<SizeType>(diff);
 	return b;
+}
+
+template<typename T>
+void Vector<T>::clear()
+{
+	erase(begin(), end());
 }

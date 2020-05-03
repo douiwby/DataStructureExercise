@@ -22,6 +22,58 @@ namespace Algorithm
 		return e;
 	}
 
+	template<typename Iterator, typename T>
+	Iterator upper_bound(Iterator b, Iterator e, const T& v)
+	{
+		if (b == e) return b;
+		Iterator mid = b + (e - b) / 2;
+		Iterator searchBegin = b;
+		Iterator searchEnd = e;
+		do 
+		{
+			if (v < *mid)
+			{
+				searchEnd = mid;
+			}
+			else
+			{
+				searchBegin = ++mid;
+			}
+			mid = searchBegin + (searchEnd - searchBegin) / 2;
+		} while (searchBegin != searchEnd);
+		return mid;
+	}
+
+	template<typename Iterator, typename T>
+	Iterator lower_bound(Iterator b, Iterator e, const T& v)
+	{
+		if (b == e) return b;
+		Iterator mid = b + (e - b) / 2;
+		Iterator searchBegin = b;
+		Iterator searchEnd = e;
+		do
+		{
+			if (v < *mid || v == *mid)
+			{
+				searchEnd = mid;
+			}
+			else
+			{
+				searchBegin = ++mid;
+			}
+			mid = searchBegin + (searchEnd - searchBegin) / 2;
+		} while (searchBegin != searchEnd);
+		return mid;
+	}
+
+	template<typename Iterator, typename T>
+	Iterator binarySearch(Iterator b, Iterator e, const T& v)
+	{
+		Iterator result = lower_bound(b, e, v);
+		if (result != e && *result == v) return result;
+		else return e;
+	}
+
 	template<typename Iterator>
 	Iterator unique(Iterator b, Iterator e)
 	{
@@ -48,6 +100,32 @@ namespace Algorithm
 				*currentPosition = *b;
 		}
 		return ++currentPosition;
+	}
+
+	template<typename Iterator, typename Compare>
+	bool is_sorted(Iterator b, Iterator e, Compare comp)
+	{
+		if (b == e) return true;
+		Iterator next = b;
+		while (++next != e)
+		{
+			if (comp(*next, *b)) return false;  //Note it's not if(!comp(*b,*next))
+			++b;
+		}
+		return true;
+	}
+
+	template<typename Iterator>
+	bool is_sorted(Iterator b, Iterator e)
+	{
+		if (b == e) return true;
+		Iterator next = b;
+		while (++next != e)
+		{
+			if (*next < *b) return false;
+			++b;
+		}
+		return true;
 	}
 }
 
