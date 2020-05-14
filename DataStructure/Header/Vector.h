@@ -25,11 +25,13 @@ public:
 	template<typename T2>
 	Vector(const Vector<T2>& v);
 	Vector(VectorIterator b, const VectorIterator& e);
+	Vector& operator=(const Vector& v);
 
 	// --------------------
 	// Member operator
 	// --------------------
 	SizeType size() const { return _size; }
+	bool empty() const { return _size == 0; }
 	SizeType capacity() const { return _capacity; }
 	T& operator[](Rank r) const { assert(r < _size); return _data[r]; }
 	T& front() const { return _data[0]; }
@@ -53,8 +55,6 @@ public:
 	// Algorithms
 	// --------------------
 	VectorIterator find(const T& v) const { return Algorithm::find(begin(), end(), v); }
-
-	VectorIterator binarySearch(const T& v) const;
 
 private:
 	SizeType _size;
@@ -129,6 +129,24 @@ Vector<T>::Vector(VectorIterator b, const VectorIterator& e)
 }
 
 template<typename T>
+inline Vector<T>& Vector<T>::operator=(const Vector& v)
+{
+	if (&v == this) return *this;
+	
+	T* newData = new T[v.size()];
+	for (SizeType i = 0; i < v.size(); ++i)
+	{
+		newData[i] = v[i];
+	}
+
+	Vector::~Vector();
+	_size = _capacity = v.size();
+	_data = newData;
+
+	return *this;
+}
+
+template<typename T>
 inline void Vector<T>::expand(SizeType n)
 {
 	if (n <= _capacity) return;
@@ -153,6 +171,7 @@ inline void Vector<T>::push_back(const T& v)
 template<typename T>
 inline void Vector<T>::pop_back()
 {
+	assert(_size > 0);
 	*(_data + _size - 1) = T(); // This should call destructor of original element
 	--_size;
 }

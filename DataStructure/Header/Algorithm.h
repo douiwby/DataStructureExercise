@@ -53,13 +53,13 @@ namespace Algorithm
 		Iterator searchEnd = e;
 		do
 		{
-			if (v < *mid || v == *mid)
+			if (*mid < v)
 			{
-				searchEnd = mid;
+				searchBegin = ++mid;
 			}
 			else
 			{
-				searchBegin = ++mid;
+				searchEnd = mid;
 			}
 			mid = searchBegin + (searchEnd - searchBegin) / 2;
 		} while (searchBegin != searchEnd);
@@ -70,7 +70,7 @@ namespace Algorithm
 	Iterator binarySearch(Iterator b, Iterator e, const T& v)
 	{
 		Iterator result = lower_bound(b, e, v);
-		if (result != e && *result == v) return result;
+		if ( result!= e && *result == v) return result;
 		else return e;
 	}
 
@@ -132,19 +132,25 @@ namespace Algorithm
 #include <iostream>
 
 template <typename Iterator>
-void printByIterator(Iterator b, Iterator e)
+void printByIterator(Iterator b, Iterator e, char* separateSymbol = ",")
 {
 	for (; b != e; )
 	{
 		std::cout << *b;
 		++b;
-		if (b != e) std::cout << ",";
+		if (b != e && separateSymbol) std::cout << separateSymbol;
 	}
 	std::cout << std::endl;
 }
 
 template<typename Container>
-void printContainer(const Container& c)
+void printContainer(const Container& c, char* separateSymbol = ",")
 {
-	printByIterator(c.begin(), c.end());
+	printByIterator(c.begin(), c.end(), separateSymbol);
+}
+
+template<typename Adaptor>
+void printAdaptor(const Adaptor& a, char* separateSymbol = ",")
+{
+	printContainer(a.data, separateSymbol);
 }

@@ -47,6 +47,13 @@ public:
 			insert(end(), *_beg);
 		}
 	}
+	List& operator=(const List& l)
+	{
+		if (&l == this) return;
+		List::~List();
+		init();
+		insert(begin(), l.begin(), l.end());
+	}
 	~List();
 	void clear();
 
@@ -55,6 +62,7 @@ public:
 	// --------------------
 
 	SizeType size() const { return _size; }
+	bool empty() const { return _size == 0; }
 	ListIterator begin() const { return ListIterator(header->next); }
 	ListIterator end() const { return ListIterator(trailer); }
 	T& front() const 
@@ -72,6 +80,10 @@ public:
 	ListIterator insert(const ListIterator& it, const ListIterator& b, const ListIterator& e);
 	ListIterator erase(const ListIterator& it);
 	ListIterator erase(const ListIterator& b, const ListIterator& e);
+	void push_back(const T& v) { insert(end(), v); }
+	void push_front(const T& v) { insert(begin(), v); }
+	void pop_back() { erase(--end()); }
+	void pop_front() { erase(begin()); }
 
 	// --------------------
 	// Algorithms
