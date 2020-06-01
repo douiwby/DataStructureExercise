@@ -3,6 +3,10 @@
 #include <cmath>
 #include <cstring>
 
+// --------------------
+// Evaluate an expression and get the RPN(Reverse Polish notation).
+// --------------------
+
 enum Operator:char {ADD='+',SUB='-',MUL='*',DIV='/',POW='^',FAC='!',NEG='N',L_P='(',R_P=')'};
 
 EvaluateResultType strToNumber(const char* exp)
@@ -307,4 +311,88 @@ EvaluateResultType evaluate(const char* exp, Vector<char>& RPN)
 
 	if (numberStack.empty()) return 0.f;
 	else return numberStack.top();
+}
+
+// --------------------
+// N Queen Problem
+// --------------------
+
+bool isPositonAvaiable(const Position2D& pos, const List<Position2D>& placedQueen)
+{
+	if (placedQueen.empty()) return true;
+
+	for (auto existPosition : placedQueen)
+	{
+		if (pos.x == existPosition.x ||
+			pos.y == existPosition.y ||
+			pos.x - existPosition.x == pos.y - existPosition.y ||
+			pos.x - existPosition.x == existPosition.y - pos.y)
+		{
+			return false;
+		}
+	}
+
+	return true;
+}
+
+void placeNQueen(int N, List<List<Position2D>>& solutions)
+{
+	List<Position2D> solution;
+	Position2D currentSearchPosition;
+	currentSearchPosition.x = 0, currentSearchPosition.y = 0;
+	
+	while (true)
+	{
+		bool findResultSuccess = false;
+
+		for (; currentSearchPosition.y < N; ++currentSearchPosition.y)
+		{
+			if (isPositonAvaiable(currentSearchPosition, solution))
+			{
+				findResultSuccess = true;
+				break;
+			}
+		}
+
+		if (findResultSuccess)
+		{
+			solution.push_back(currentSearchPosition);
+			++currentSearchPosition.x;
+			currentSearchPosition.y = 0;
+			if (currentSearchPosition.x >= N)
+			{
+				// Find a solution successful
+				solutions.push_back(solution);
+				
+				currentSearchPosition = solution.back();
+				solution.pop_back();
+				++currentSearchPosition.y;
+			}
+		}
+		else
+		{
+			if (solution.empty()) return; // Fail to find a solution
+			currentSearchPosition = solution.back();
+			solution.pop_back();
+			++currentSearchPosition.y;
+		}
+	}
+}
+
+#include <iostream>
+void printNQueenSolution(List<Position2D>& solution)
+{
+	using namespace std;
+
+	char blank = 'o';
+	char queen = '*';
+
+	int N = solution.size();
+	for (auto pos:solution)
+	{
+		for (int i = 0; i < pos.y; ++i) cout << blank;
+		cout << queen;
+		for (int i = pos.y + 1; i < N; ++i) cout << blank;
+		cout << endl;
+	}
 }

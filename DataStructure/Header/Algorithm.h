@@ -132,7 +132,7 @@ namespace Algorithm
 #include <iostream>
 
 template <typename Iterator>
-void printByIterator(Iterator b, Iterator e, char* separateSymbol = ",")
+void printByIterator(Iterator b, Iterator e, const char* separateSymbol = ",")
 {
 	for (; b != e; )
 	{
@@ -144,13 +144,13 @@ void printByIterator(Iterator b, Iterator e, char* separateSymbol = ",")
 }
 
 template<typename Container>
-void printContainer(const Container& c, char* separateSymbol = ",")
+void printContainer(const Container& c, const char* separateSymbol = ",")
 {
 	printByIterator(c.begin(), c.end(), separateSymbol);
 }
 
 template<typename Adaptor>
-void printAdaptor(const Adaptor& a, char* separateSymbol = ",")
+void printAdaptor(const Adaptor& a, const char* separateSymbol = ",")
 {
 	printContainer(a.data, separateSymbol);
 }

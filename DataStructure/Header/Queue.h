@@ -35,5 +35,5 @@ private:
 	// --------------------
 	// Friend declaration
 	// --------------------
-	friend void printAdaptor<Queue>(const Queue& a, char* separateSymbol);
+	friend void printAdaptor<Queue>(const Queue& a, const char* separateSymbol);
 };

@@ -1,6 +1,8 @@
 #pragma once
 
 #include "Stack.h"
+#include "Vector.h"
+#include "List.h"
 
 #include <cctype>
 
@@ -54,4 +56,12 @@ bool isValidExpression(const char(&exp)[N])
 
 // Evaluate an expression and get the RPN(Reverse Polish notation).
 typedef float EvaluateResultType;
-EvaluateResultType evaluate(const char* exp, Vector<char>& RPN = Vector<char>());
+EvaluateResultType evaluate(const char* exp, Vector<char>& RPN);
+
+// N Queen Problem
+struct Position2D
+{
+	int x, y;
+};
+void placeNQueen(int N, List<List<Position2D>>& solutions);
+void printNQueenSolution(List<Position2D>& solution);
