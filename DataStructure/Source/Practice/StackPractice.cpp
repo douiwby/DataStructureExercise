@@ -1,4 +1,4 @@
-#include "StackPractice.h"
+#include "Practice\StackPractice.h"
 
 #include <cmath>
 #include <cstring>
@@ -46,6 +46,8 @@ EvaluateResultType strToNumber(const char* exp)
 
 const char rpnSeparateSymbol = ' ';
 
+#pragma warning( push )
+#pragma warning( disable : 4996 )
 void appEndRpn(Vector<char>& RPN, float number)
 {
 	RPN.push_back(rpnSeparateSymbol);
@@ -65,6 +67,7 @@ void appEndRpn(Vector<char>& RPN, float number)
 		RPN.push_back(*(p++));
 	}
 }
+#pragma warning( pop )
 
 void appEndRpn(Vector<char>& RPN, Operator op)
 {
