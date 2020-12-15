@@ -19,7 +19,7 @@ enum TraversalImplementVersion
 	ITERATION_1,
 	ITERATION_2,
 };
-TraversalImplementVersion gVersion = ITERATION_1;
+#define DefaultVersion ITERATION_1
 
 template<typename T>
 class BinNode
@@ -67,6 +67,8 @@ public:
 	BinNode<T>* getParent() const{ return parent; }
 	BinNode<T>* getLChild() const{ return lChild; }
 	BinNode<T>* getRChild() const{ return rChild; }
+	T& getData() { return data; }
+	const T& getData() const { return data; }
 
 	// --------------------
 	// Check status
@@ -100,10 +102,10 @@ public:
 	BinNode<T>* insertAsLChild(BinNode<T>* data);
 	BinNode<T>* insertAsRChild(BinNode<T>* data);
 
-	template<typename FUNC> void traversalInorder(FUNC func, TraversalImplementVersion version = gVersion);
-	template<typename FUNC> void traversalPreorder(FUNC func, TraversalImplementVersion version = gVersion);
-	template<typename FUNC> void traversalPostorder(FUNC func, TraversalImplementVersion version = gVersion);
-	template<typename FUNC> void traversalLevel(FUNC func, TraversalImplementVersion version = gVersion);
+	template<typename FUNC> void traversalInorder(FUNC func, TraversalImplementVersion version = DefaultVersion);
+	template<typename FUNC> void traversalPreorder(FUNC func, TraversalImplementVersion version = DefaultVersion);
+	template<typename FUNC> void traversalPostorder(FUNC func, TraversalImplementVersion version = DefaultVersion);
+	template<typename FUNC> void traversalLevel(FUNC func, TraversalImplementVersion version = DefaultVersion);
 
 	BinNode<T>* succ();
 };

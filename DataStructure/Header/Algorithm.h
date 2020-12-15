@@ -1,5 +1,7 @@
 #pragma once
 
+#include <iostream>
+
 namespace Algorithm
 {
 	template<typename Iterator, typename T>
@@ -128,8 +130,6 @@ namespace Algorithm
 		return true;
 	}
 }
-
-#include <iostream>
 
 template <typename Iterator>
 void printByIterator(Iterator b, Iterator e, const char* separateSymbol = ",")

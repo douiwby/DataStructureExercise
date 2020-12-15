@@ -247,6 +247,7 @@ inline typename Vector<T>::VectorIterator Vector<T>::erase(const VectorIterator&
 template<typename T>
 typename Vector<T>::VectorIterator Vector<T>::erase(const VectorIterator& b, const VectorIterator& e)
 {
+	if (b == e) return b;
 	assert(b != end());
 	DifferenceType diff = e - b;
 	assert(diff >= 0);
