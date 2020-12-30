@@ -9,7 +9,7 @@ public:
 	BinTree(BinNode<T>* inRoot = nullptr) :_root(inRoot) { _size = inRoot ? 1 : 0; }
 	~BinTree() { remove(_root); }
 
-private:
+protected:
 
 	BinNode<T>* _root;
 	int _size;
@@ -46,14 +46,17 @@ public:
 	bool operator!=(const BinTree& tree) { return !(*this == tree); }
 
 
-private:
+protected:
 
 	void updateHeight(BinNode<T>* node);
 	void updateHeightAbove(BinNode<T>* node);
 
+	BinNode<T>*& fromParentTo(const BinNode<T>* node);
+
+private:
+
 	void internalRemove(BinNode<T>* node);
 
-	BinNode<T>*& fromParentTo(const BinNode<T>* node);
 };
 
 template<typename T>

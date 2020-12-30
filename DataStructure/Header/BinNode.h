@@ -6,6 +6,8 @@
 #define stature(node) ((node)?(node)->height():-1)
 
 template<typename T> class BinTree;
+template<typename T> class BinarySearchTree;
+template<typename T> class AVLTree;
 
 enum RBColor
 {
@@ -25,6 +27,8 @@ template<typename T>
 class BinNode
 {
 	friend class BinTree<T>;
+	friend class BinarySearchTree<T>;
+	friend class AVLTree<T>;
 
 public:
 
