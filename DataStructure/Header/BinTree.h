@@ -1,12 +1,12 @@
 #pragma once
-
+#include <iomanip>
 #include "BinNode.h"
 
 template<typename T>
 class BinTree
 {
 public:
-	BinTree(BinNode<T>* inRoot = nullptr) :_root(inRoot) { _size = inRoot ? 1 : 0; }
+	BinTree(BinNode<T>* inRoot = nullptr) :_root(inRoot) { _size = inRoot ? inRoot->size() : 0; }
 	~BinTree() { remove(_root); }
 
 protected:
@@ -28,8 +28,15 @@ public:
 	BinNode<T>* insertAsLChild(BinNode<T>* parent, const T& data);
 	BinNode<T>* insertAsRChild(BinNode<T>* parent, const T& data);
 
-	BinNode<T>* attachAsLChild(BinNode<T>* parent, BinTree& subTree);
-	BinNode<T>* attachAsRChild(BinNode<T>* parent, BinTree& subTree);
+	// Move a subtree and attach to certain node
+	// Return the subtree root after moved
+	BinNode<T>* attachAsLChild(BinNode<T>* parent, BinNode<T>* node);
+	BinNode<T>* attachAsRChild(BinNode<T>* parent, BinNode<T>* node);
+
+	// Attach another tree to one node
+	// Return the original root node of tree that added
+	BinNode<T>* attachAsLChild(BinNode<T>* parent, BinTree& tree);
+	BinNode<T>* attachAsRChild(BinNode<T>* parent, BinTree& tree);
 
 	// Remove the subtree from given node
 	BinNode<T>* remove(BinNode<T>* node);
@@ -45,19 +52,121 @@ public:
 	bool operator==(const BinTree& tree) { return _root && tree._root&&_root == tree._root; }
 	bool operator!=(const BinTree& tree) { return !(*this == tree); }
 
+	BinNode<T>* zig(BinNode<T>* node);
+	BinNode<T>* zag(BinNode<T>* node);
+
+	virtual void printTree(int wordWidth = 4);
 
 protected:
 
-	void updateHeight(BinNode<T>* node);
+	virtual void updateHeight(BinNode<T>* node);
 	void updateHeightAbove(BinNode<T>* node);
 
 	BinNode<T>*& fromParentTo(const BinNode<T>* node);
+
+	virtual void internalPrintData(int currentHeight, int wordWidth, BinNode<T>* node);
 
 private:
 
 	void internalRemove(BinNode<T>* node);
 
 };
+
+template<typename T>
+inline BinNode<T>* BinTree<T>::zig(BinNode<T>* node)
+{
+	BinNode<T>* lc = node->lChild;
+	if (!lc) return nullptr;
+	fromParentTo(node) = lc;
+	lc->parent = node->parent;
+	node->parent = nullptr;
+	node->lChild = nullptr;
+	updateHeight(node);  // We cut off half of the subtree of node, the height may change.
+	attachAsLChild(node, lc->rChild);
+	attachAsRChild(lc, node);
+	return lc;
+}
+
+template<typename T>
+inline BinNode<T>* BinTree<T>::zag(BinNode<T>* node)
+{
+	BinNode<T>* rc = node->rChild;
+	if (!rc) return nullptr;
+	fromParentTo(node) = rc;
+	rc->parent = node->parent;
+	node->parent = nullptr;
+	node->rChild = nullptr;
+	updateHeight(node);  // We cut off half of the subtree of node, the height may change.
+	attachAsRChild(node, rc->lChild);
+	attachAsLChild(rc, node);
+	return rc;
+}
+
+template<typename T>
+void BinTree<T>::printTree(int wordWidth)
+{
+	BinNode<T>* p = _root;
+	Queue<BinNode<T>*> q;
+	q.push(p);
+
+	int totalHeight = _root->_height + 1;
+
+	int currentHeight = 1;
+	int currentRowCount = 1;
+	int currentWidth = wordWidth << (totalHeight - 1);
+
+	std::cout << "--------" << std::endl;
+	std::cout << std::left;
+
+	do
+	{
+		for (int i = 0; i < currentRowCount; ++i)
+		{
+			p = q.front();
+			q.pop();
+
+			if (p)
+			{
+				internalPrintData(currentWidth, wordWidth, p);
+				q.push(p->lChild);
+				q.push(p->rChild);
+			}
+			else
+			{
+				std::cout << std::setw(currentWidth) << '\0';
+				q.push(nullptr);
+				q.push(nullptr);
+			}
+		}
+
+		++currentHeight;
+		currentRowCount <<= 1;
+		currentWidth >>= 1;
+
+		std::cout << std::endl;
+	} while (currentHeight <= totalHeight);
+
+	std::cout << "--------" << std::endl;
+}
+
+template<typename T>
+inline void BinTree<T>::internalPrintData(int currentWidth, int wordWidth, BinNode<T>* node)
+{
+#define CENTER 1
+
+#if CENTER
+	if (currentWidth != wordWidth)
+	{
+		std::cout << std::right;
+		std::cout << std::setw(currentWidth / 2) << node->data << std::setw(currentWidth / 2) << ' ';
+		std::cout << std::left;
+	}
+	else
+#endif
+	{
+		std::cout << std::setw(currentWidth) << node->data;
+	}
+}
 
 template<typename T>
 inline void BinTree<T>::updateHeight(BinNode<T>* node)
@@ -110,29 +219,57 @@ inline BinNode<T>* BinTree<T>::insertAsRChild(BinNode<T>* parent, const T & data
 }
 
 template<typename T>
-inline BinNode<T>* BinTree<T>::attachAsLChild(BinNode<T>* parent, BinTree & subTree)
+inline BinNode<T>* BinTree<T>::attachAsLChild(BinNode<T>* parent, BinNode<T>* node)
 {
-	assert(parent);
-	if (!subTree._root) return nullptr;
-	parent->lChild = subTree._root;
-	subTree._root->parent = parent;
-	subTree._root = nullptr;
-	_size += subTree._size;
-	subTree._size = 0;
+	assert(parent && !parent->hasLChild());
+	if (!node) return nullptr;
+	BinNode<T>* originalParent = node->parent;
+	fromParentTo(node) = nullptr;
+	node->parent = parent;
+	parent->lChild = node;
+	updateHeightAbove(parent);
+	updateHeightAbove(originalParent);
+	return node;
+}
+
+template<typename T>
+inline BinNode<T>* BinTree<T>::attachAsRChild(BinNode<T>* parent, BinNode<T>* node)
+{
+	assert(parent && !parent->hasRChild());
+	if (!node) return nullptr;
+	BinNode<T>* originalParent = node->parent;
+	fromParentTo(node) = nullptr;
+	node->parent = parent;
+	parent->rChild = node;
+	updateHeightAbove(parent);
+	updateHeightAbove(originalParent);
+	return node;
+}
+
+template<typename T>
+inline BinNode<T>* BinTree<T>::attachAsLChild(BinNode<T>* parent, BinTree & tree)
+{
+	assert(parent && !parent->lChild);
+	if (!tree._root) return nullptr;
+	parent->lChild = tree._root;
+	tree._root->parent = parent;
+	tree._root = nullptr;
+	_size += tree._size;
+	tree._size = 0;
 	updateHeightAbove(parent);
 	return parent->lChild;
 }
 
 template<typename T>
-inline BinNode<T>* BinTree<T>::attachAsRChild(BinNode<T>* parent, BinTree & subTree)
+inline BinNode<T>* BinTree<T>::attachAsRChild(BinNode<T>* parent, BinTree & tree)
 {
-	assert(parent);
-	if (!subTree._root) return nullptr;
-	parent->rChild = subTree._root;
-	subTree._root->parent = parent;
-	subTree._root = nullptr;
-	_size += subTree._size;
-	subTree._size = 0;
+	assert(parent && !parent->rChild);
+	if (!tree._root) return nullptr;
+	parent->rChild = tree._root;
+	tree._root->parent = parent;
+	tree._root = nullptr;
+	_size += tree._size;
+	tree._size = 0;
 	updateHeightAbove(parent);
 	return parent->rChild;
 }

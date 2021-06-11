@@ -8,6 +8,7 @@
 template<typename T> class BinTree;
 template<typename T> class BinarySearchTree;
 template<typename T> class AVLTree;
+template<typename T> class SplayTree;
 
 enum RBColor
 {
@@ -29,6 +30,7 @@ class BinNode
 	friend class BinTree<T>;
 	friend class BinarySearchTree<T>;
 	friend class AVLTree<T>;
+	friend class SplayTree<T>;
 
 public:
 

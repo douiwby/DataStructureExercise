@@ -18,8 +18,8 @@ public:
 
 protected:
 
+	// Remember updateHeightAbove on return node's parent
 	BinNode<T>* connect34(BinNode<T>* a, BinNode<T>* b, BinNode<T>* c, BinNode<T>* T0, BinNode<T>* T1, BinNode<T>* T2, BinNode<T>* T3);
-
 	BinNode<T>* rotateAt(BinNode<T>* v);
 
 	void swap(BinNode<T>*& val1, BinNode<T>*& val2);
@@ -132,6 +132,14 @@ bool BinarySearchTree<T>::erase(const T& val)
 template<typename T>
 BinNode<T>* BinarySearchTree<T>::connect34(BinNode<T>* a, BinNode<T>* b, BinNode<T>* c, BinNode<T>* T0, BinNode<T>* T1, BinNode<T>* T2, BinNode<T>* T3)
 {
+	/*********************
+	*      B
+	*    /   \
+	*   A     C
+	*  / \   / \
+	* T0 T1 T2 T3
+	*********************/
+
 	a->lChild = T0;
 	if (T0) T0->parent = a;
 	a->rChild = T1;

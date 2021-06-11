@@ -6,8 +6,8 @@ class AVLTree : public BinarySearchTree<T>
 {
 public:
 
-	virtual BinNode<T>* insert(const T& val);
-	virtual bool erase(const T& val);
+	virtual BinNode<T>* insert(const T& val) override;
+	virtual bool erase(const T& val) override;
 
 protected:
 
