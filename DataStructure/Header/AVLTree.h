@@ -89,36 +89,7 @@ bool AVLTree<T>::erase(const T & val)
 	BinNode<T>* pos = this->search(val);
 	if (pos)
 	{
-		BinNode<T>* swapNode;
-		BinNode<T>* parentNode;
-		if (!pos->hasRChild())
-		{
-			swapNode = pos->getLChild();
-
-			this->fromParentTo(pos) = swapNode;
-			if (swapNode) swapNode->parent = pos->parent;
-			parentNode = pos->parent;
-			delete pos;
-		}
-		else if (!pos->hasLChild())
-		{
-			swapNode = pos->getRChild();
-
-			this->fromParentTo(pos) = swapNode;
-			if (swapNode) swapNode->parent = pos->parent;
-			parentNode = pos->parent;
-			delete pos;
-		}
-		else
-		{
-			swapNode = pos->succ();
-			this->swap(pos, swapNode);
-
-			this->fromParentTo(pos) = pos->getRChild();
-			if (pos->hasRChild()) pos->getRChild()->parent = pos->parent;
-			parentNode = pos->parent;
-			delete pos;
-		}
+		this->eraseAt(pos);
 		--(this->_size);
 
 		// Rotate node to make tree balance

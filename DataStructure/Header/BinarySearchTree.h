@@ -23,6 +23,8 @@ protected:
 	BinNode<T>* rotateAt(BinNode<T>* v);
 
 	void swap(BinNode<T>*& val1, BinNode<T>*& val2);
+
+	BinNode<T>* eraseAt(BinNode<T>* pos);
 };
 
 template<typename T>
@@ -89,44 +91,50 @@ bool BinarySearchTree<T>::erase(const T& val)
 	BinNode<T>* pos = search(val);
 	if (pos)
 	{
-		BinNode<T>* swapNode;
-		BinNode<T>* parentNode;
-		if (!pos->hasRChild())
-		{
-			swapNode = pos->getLChild();
-
-			this->fromParentTo(pos) = swapNode;
-			if (swapNode) swapNode->parent = pos->parent;
-			parentNode = pos->parent;
-			delete pos;
-		}
-		else if (!pos->hasLChild())
-		{
-			swapNode = pos->getRChild();
-
-			this->fromParentTo(pos) = swapNode;
-			if (swapNode) swapNode->parent = pos->parent;
-			parentNode = pos->parent;
-			delete pos;
-		}
-		else
-		{ 
-			swapNode = pos->succ();
-			swap(pos, swapNode);
-			
-			this->fromParentTo(pos) = pos->getRChild();
-			if (pos->hasRChild()) pos->getRChild()->parent = pos->parent;
-			parentNode = pos->parent;
-			delete pos;
-		}
+		eraseAt(pos);
 		--(this->_size);
-		this->updateHeightAbove(parentNode);
+		this->updateHeightAbove(_hot);
 		return true;
 	}
 	else
 	{
 		return false;
 	}
+}
+
+template<typename T>
+inline BinNode<T>* BinarySearchTree<T>::eraseAt(BinNode<T>* pos)
+{
+	BinNode<T>* swapNode;
+
+	if (!pos->hasRChild())
+	{
+		swapNode = pos->getLChild();
+
+		this->fromParentTo(pos) = swapNode;
+		if (swapNode) swapNode->parent = pos->parent;
+	}
+	else if (!pos->hasLChild())
+	{
+		swapNode = pos->getRChild();
+
+		this->fromParentTo(pos) = swapNode;
+		if (swapNode) swapNode->parent = pos->parent;
+	}
+	else
+	{
+		swapNode = pos->succ();
+		swap(pos, swapNode);
+
+		swapNode = pos->getRChild();
+		this->fromParentTo(pos) = swapNode;
+		if (swapNode) swapNode->parent = pos->parent;
+	}
+
+	_hot = pos->parent;
+	delete pos;
+
+	return swapNode;
 }
 
 template<typename T>

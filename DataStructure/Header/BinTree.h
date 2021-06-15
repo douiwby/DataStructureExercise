@@ -224,7 +224,7 @@ inline BinNode<T>* BinTree<T>::attachAsLChild(BinNode<T>* parent, BinNode<T>* no
 	assert(parent && !parent->hasLChild());
 	if (!node) return nullptr;
 	BinNode<T>* originalParent = node->parent;
-	fromParentTo(node) = nullptr;
+	if(originalParent) fromParentTo(node) = nullptr;
 	node->parent = parent;
 	parent->lChild = node;
 	updateHeightAbove(parent);
@@ -238,7 +238,7 @@ inline BinNode<T>* BinTree<T>::attachAsRChild(BinNode<T>* parent, BinNode<T>* no
 	assert(parent && !parent->hasRChild());
 	if (!node) return nullptr;
 	BinNode<T>* originalParent = node->parent;
-	fromParentTo(node) = nullptr;
+	if (originalParent) fromParentTo(node) = nullptr;
 	node->parent = parent;
 	parent->rChild = node;
 	updateHeightAbove(parent);
